@@ -1,14 +1,16 @@
-﻿// MonoGame - Copyright (C) The MonoGame Team
+// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
 using System;
+using System.Threading;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NUnit.Framework;
 
 namespace MonoGame.Tests.Graphics {
-	[TestFixture]
+    [NonParallelizable]
+	[RunOnUiTestFixture]
 	class SpriteBatchTest : GraphicsDeviceTestFixtureBase {
 		private SpriteBatch _spriteBatch;
 		private Texture2D _texture;
@@ -39,12 +41,12 @@ namespace MonoGame.Tests.Graphics {
 	    [TearDown]
 	    public override void TearDown()
 	    {
-	        _spriteBatch.Dispose();
-            _texture.Dispose();
-            _texture2.Dispose();
-            _texture3.Dispose();
-            _effect.Dispose();
-            _effect2.Dispose();
+	        _spriteBatch?.Dispose();
+            _texture?.Dispose();
+            _texture2?.Dispose();
+            _texture3?.Dispose();
+            _effect?.Dispose();
+            _effect2?.Dispose();
 
             base.TearDown();
 	    }
@@ -409,7 +411,7 @@ namespace MonoGame.Tests.Graphics {
         }
 
         [Test]
-#if DESKTOPGL
+#if DESKTOPGL|| DESKTOPGL4
         // OpenGL produces a slightly different result.
         // I think this is due to differences in how downsampling is done by default
         // (it makes a big difference here because the textures are so small).

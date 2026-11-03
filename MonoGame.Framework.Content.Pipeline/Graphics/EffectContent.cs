@@ -1,4 +1,4 @@
-﻿// MonoGame - Copyright (C) The MonoGame Team
+﻿// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
@@ -10,16 +10,8 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
     public class EffectContent : ContentItem
     {
         /// <summary>
-        /// Initializes a new instance of EffectContent.
-        /// </summary>
-        public EffectContent()
-        {
-
-        }
-
-        /// <summary>
         /// Gets or sets the effect program source code.
         /// </summary>
-        public string EffectCode { get; set; }
+        public string EffectCode { get; set; } = "";
     }
 }

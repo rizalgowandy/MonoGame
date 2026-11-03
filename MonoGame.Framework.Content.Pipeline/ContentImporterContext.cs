@@ -1,4 +1,4 @@
-﻿// MonoGame - Copyright (C) The MonoGame Team
+﻿// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
@@ -23,14 +23,6 @@ namespace Microsoft.Xna.Framework.Content.Pipeline
         /// The absolute path to the root of the build output (binaries) directory.
         /// </summary>
         public abstract string OutputDirectory { get; }
-
-        /// <summary>
-        /// Initializes a new instance of ContentImporterContext.
-        /// </summary>
-        public ContentImporterContext()
-        {
-
-        }
 
         /// <summary>
         /// Adds a dependency to the specified file. This causes a rebuild of the file, when modified, on subsequent incremental builds.

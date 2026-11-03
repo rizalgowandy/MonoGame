@@ -1,9 +1,9 @@
-// MonoGame - Copyright (C) The MonoGame Team
+// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
 using System;
-using Android.Views;
+using global::Android.Views;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Media;
 
@@ -22,7 +22,9 @@ namespace Microsoft.Xna.Framework
             _gameWindow = new AndroidGameWindow(Game.Activity, game);
             Window = _gameWindow;
 
+#if !NO_AUDIO
             MediaLibrary.Context = Game.Activity;
+#endif
         }
 
         protected override void Dispose(bool disposing)
@@ -77,7 +79,7 @@ namespace Microsoft.Xna.Framework
 
             switch (Game.Activity.Resources.Configuration.Orientation)
             {
-                case Android.Content.Res.Orientation.Portrait:
+                case global::Android.Content.Res.Orientation.Portrait:
                     this._gameWindow.SetOrientation(currentOrientation == DisplayOrientation.PortraitDown ? DisplayOrientation.PortraitDown : DisplayOrientation.Portrait, false);
                     break;
                 default:
@@ -152,7 +154,7 @@ namespace Microsoft.Xna.Framework
         public override void Log(string Message)
         {
 #if LOGGING
-            Android.Util.Log.Debug("MonoGameDebug", Message);
+            global::Android.Util.Log.Debug("MonoGameDebug", Message);
 #endif
         }
 
@@ -168,7 +170,7 @@ namespace Microsoft.Xna.Framework
             }
             catch (Exception ex)
             {
-                Android.Util.Log.Error("Error in swap buffers", ex.ToString());
+                global::Android.Util.Log.Error("Error in swap buffers", ex.ToString());
             }
         }
     }

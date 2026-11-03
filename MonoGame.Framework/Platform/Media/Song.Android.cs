@@ -1,45 +1,46 @@
-// MonoGame - Copyright (C) The MonoGame Team
+// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
 using System;
 using System.IO;
+using AM = global::Android.Media;
+using AN = global::Android.Net;
 
 namespace Microsoft.Xna.Framework.Media
 {
     public sealed partial class Song : IEquatable<Song>, IDisposable
     {
-        static Android.Media.MediaPlayer _androidPlayer;
+        static AM.MediaPlayer _androidPlayer;
         static Song _playingSong;
 
         private Album album;
         private Artist artist;
         private Genre genre;
-        private string name;
-        private TimeSpan duration;
         private TimeSpan position;
-        private Android.Net.Uri assetUri;
+        private AN.Uri assetUri;
 
-        [CLSCompliant(false)]
-        public Android.Net.Uri AssetUri
+        public AN.Uri AssetUri
         {
             get { return this.assetUri; }
         }
 
         static Song()
         {
-            _androidPlayer = new Android.Media.MediaPlayer();
+            _androidPlayer = new AM.MediaPlayer();
             _androidPlayer.Completion += AndroidPlayer_Completion;
         }
 
-        internal Song(Album album, Artist artist, Genre genre, string name, TimeSpan duration, Android.Net.Uri assetUri)
+        internal Song(Album album, Artist artist, Genre genre, string name, TimeSpan duration, AN.Uri assetUri)
         {
             this.album = album;
             this.artist = artist;
             this.genre = genre;
-            this.name = name;
-            this.duration = duration;
             this.assetUri = assetUri;
+            _duration = duration;
+
+            if (this.assetUri != null)
+                _name = name;
         }
 
         private void PlatformInitialize(string fileName)
@@ -75,20 +76,27 @@ namespace Microsoft.Xna.Framework.Media
         {
             // Prepare the player
             _androidPlayer.Reset();
+            
 
             if (assetUri != null)
             {
+                // Check if we have a direct asset URI.
                 _androidPlayer.SetDataSource(MediaLibrary.Context, this.assetUri);
+            }
+            else if (_filePath.StartsWith("file://"))
+            {
+                // Otherwise, check if this is a file URI.
+                _androidPlayer.SetDataSource(_filePath);
             }
             else
             {
-                var afd = Game.Activity.Assets.OpenFd(_name);
-                if (afd == null)
-                    return;
-
-                _androidPlayer.SetDataSource(afd.FileDescriptor, afd.StartOffset, afd.Length);
+                // Otherwise, assume it's a file path. (This might throw if the file doesn't exist)
+                var afd = Game.Activity?.Assets?.OpenFd(_filePath);
+                if (afd != null)
+                {
+                	_androidPlayer.SetDataSource(afd.FileDescriptor, afd.StartOffset, afd.Length);
+                }
             }
-
 
             _androidPlayer.Prepare();
             _androidPlayer.Looping = MediaPlayer.IsRepeating;
@@ -162,11 +170,6 @@ namespace Microsoft.Xna.Framework.Media
             return this.genre;
         }
 
-        private TimeSpan PlatformGetDuration()
-        {
-            return this.assetUri != null ? this.duration : _duration;
-        }
-
         private bool PlatformIsProtected()
         {
             return false;
@@ -175,11 +178,6 @@ namespace Microsoft.Xna.Framework.Media
         private bool PlatformIsRated()
         {
             return false;
-        }
-
-        private string PlatformGetName()
-        {
-            return this.assetUri != null ? this.name : Path.GetFileNameWithoutExtension(_name);
         }
 
         private int PlatformGetPlayCount()

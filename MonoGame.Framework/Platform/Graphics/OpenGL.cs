@@ -1,4 +1,4 @@
-﻿// MonoGame - Copyright (C) The MonoGame Team
+﻿// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
@@ -34,6 +34,7 @@ namespace MonoGame.OpenGL
     }
     internal enum DrawBuffersEnum
     {
+        None = 0,
         UnsignedShort,
         UnsignedInt,
     }
@@ -184,6 +185,7 @@ namespace MonoGame.OpenGL
         SampleCoverage = 0x80A0,
         DebugOutputSynchronous = 0x8242,
         DebugOutput = 0x92E0,
+        FramebufferSrgb = 0x8DB9,
     }
 
     internal enum VertexPointerType
@@ -322,6 +324,8 @@ namespace MonoGame.OpenGL
         TextureBinding2D = 0x8069,
         MaxTextureMaxAnisotropyExt = 0x84FF,
         MaxSamples = 0x8D57,
+        SampleBuffers = 0x80A8,
+        Samples = 0x80A9,
     }
 
     internal enum StringName
@@ -416,9 +420,17 @@ namespace MonoGame.OpenGL
         // ATITC
         AtcRgbaExplicitAlphaAmd = 0x8C93,
         AtcRgbaInterpolatedAlphaAmd = 0x87EE,
+        // ASTC
+        Astc4X4Rgba = 0x93B0,
+        Astc5X5Rgba = 0x93B2,
+        Astc6X6Rgba = 0x93B4,
+        Astc8X8Rgba = 0x93B7,
+        Astc10X10Rgba = 0x93BB,
+        Astc12X12Rgba = 0x93BD,
         // ETC1
         Etc1 = 0x8D64,
         Srgb = 0x8C40,
+        Srgb8Alpha8 = 0x8C43,
 
         // ETC2 RGB8A1
         Etc2Rgb8 = 0x9274,
@@ -1426,7 +1438,7 @@ namespace MonoGame.OpenGL
             LoadExtensions ();
         }
 
-        internal static List<string> Extensions = new List<string> ();
+        internal static List<string> Extensions;
 
         //[Conditional("DEBUG")]
         //[DebuggerHidden]
@@ -1439,48 +1451,61 @@ namespace MonoGame.OpenGL
 #endif
         }
 
+        internal static bool HasExtension(string name)
+        {
+            if (Extensions != null)
+                return Extensions.Contains(name);
+
+            return false;
+        }
+
         internal static void LoadExtensions()
         {
-            string extstring = GL.GetString(StringName.Extensions);
-            var error = GL.GetError();
-            if (!string.IsNullOrEmpty(extstring) && error == ErrorCode.NoError)
-                Extensions.AddRange(extstring.Split(' '));
+            if (Extensions == null)
+                Extensions = new List<string>();
 
+            if (Extensions.Count == 0)
+            {
+                string extstring = GL.GetString(StringName.Extensions);
+                var error = GL.GetError();
+                if (!string.IsNullOrEmpty(extstring) && error == ErrorCode.NoError)
+                    Extensions.AddRange(extstring.Split(' '));
+            }
             LogExtensions();
             // now load Extensions :)
-            if (GL.GenRenderbuffers == null && Extensions.Contains("GL_EXT_framebuffer_object"))
+            if (GL.GenRenderbuffers == null && HasExtension("GL_EXT_framebuffer_object"))
             {
                 GL.LoadFrameBufferObjectEXTEntryPoints();
             }
             if (GL.RenderbufferStorageMultisample == null)
             {                
-                if (Extensions.Contains("GL_APPLE_framebuffer_multisample"))
+                if (HasExtension("GL_APPLE_framebuffer_multisample"))
                 {
                     GL.RenderbufferStorageMultisample = LoadFunction<GL.RenderbufferStorageMultisampleDelegate>("glRenderbufferStorageMultisampleAPPLE");
                     GL.BlitFramebuffer = LoadFunction<GL.BlitFramebufferDelegate>("glResolveMultisampleFramebufferAPPLE");
                 }
-                else if (Extensions.Contains("GL_EXT_multisampled_render_to_texture"))
+                else if (HasExtension("GL_EXT_multisampled_render_to_texture"))
                 {
                     GL.RenderbufferStorageMultisample = LoadFunction<GL.RenderbufferStorageMultisampleDelegate>("glRenderbufferStorageMultisampleEXT");
                     GL.FramebufferTexture2DMultiSample = LoadFunction<GL.FramebufferTexture2DMultiSampleDelegate>("glFramebufferTexture2DMultisampleEXT");
 
                 }
-                else if (Extensions.Contains("GL_IMG_multisampled_render_to_texture"))
+                else if (HasExtension("GL_IMG_multisampled_render_to_texture"))
                 {
                     GL.RenderbufferStorageMultisample = LoadFunction<GL.RenderbufferStorageMultisampleDelegate>("glRenderbufferStorageMultisampleIMG");
                     GL.FramebufferTexture2DMultiSample = LoadFunction<GL.FramebufferTexture2DMultiSampleDelegate>("glFramebufferTexture2DMultisampleIMG");
                 }
-                else if (Extensions.Contains("GL_NV_framebuffer_multisample"))
+                else if (HasExtension("GL_NV_framebuffer_multisample"))
                 {
                     GL.RenderbufferStorageMultisample = LoadFunction<GL.RenderbufferStorageMultisampleDelegate>("glRenderbufferStorageMultisampleNV");
                     GL.BlitFramebuffer = LoadFunction<GL.BlitFramebufferDelegate>("glBlitFramebufferNV");
                 }
             }
-            if (GL.BlendFuncSeparatei == null && Extensions.Contains("GL_ARB_draw_buffers_blend"))
+            if (GL.BlendFuncSeparatei == null && HasExtension("GL_ARB_draw_buffers_blend"))
             {
                 GL.BlendFuncSeparatei = LoadFunction<GL.BlendFuncSeparateiDelegate>("BlendFuncSeparateiARB");
             }
-            if (GL.BlendEquationSeparatei == null && Extensions.Contains("GL_ARB_draw_buffers_blend"))
+            if (GL.BlendEquationSeparatei == null && HasExtension("GL_ARB_draw_buffers_blend"))
             {
                 GL.BlendEquationSeparatei = LoadFunction<GL.BlendEquationSeparateiDelegate>("BlendEquationSeparateiARB");
             }
@@ -1561,15 +1586,19 @@ namespace MonoGame.OpenGL
 
         protected unsafe static IntPtr MarshalStringToPtr (string str)
         {
-            if (string.IsNullOrEmpty (str)) {
+            if (string.IsNullOrEmpty (str))
+            {
                 return IntPtr.Zero;
             }
             int num = Encoding.ASCII.GetMaxByteCount (str.Length) + 1;
             IntPtr intPtr = Marshal.AllocHGlobal (num);
-            if (intPtr == IntPtr.Zero) {
+            if (intPtr == IntPtr.Zero)
+            {
                 throw new OutOfMemoryException ();
             }
-            fixed (char* chars = str + RuntimeHelpers.OffsetToStringData / 2) {
+            
+            fixed (char* chars = str)
+            {
                 int bytes = Encoding.ASCII.GetBytes (chars, str.Length, (byte*)((void*)intPtr), num);
                 Marshal.WriteByte (intPtr, bytes, 0);
                 return intPtr;

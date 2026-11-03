@@ -1,8 +1,7 @@
-﻿// MonoGame - Copyright (C) The MonoGame Team
+﻿// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
-using System;
 using System.ComponentModel;
 using System.Globalization;
 
@@ -51,22 +50,10 @@ namespace Microsoft.Xna.Framework.Content.Pipeline
         MacOSX,
 
         /// <summary>
-        /// Windows Store App
-        /// (MonoGame)
-        /// </summary>
-        WindowsStoreApp,
-
-        /// <summary>
         /// Google Chrome Native Client
         /// (MonoGame)
         /// </summary>
         NativeClient,
-
-        /// <summary>
-        /// Windows Phone 8
-        /// (MonoGame)
-        /// </summary>
-        WindowsPhone8,
 
         /// <summary>
         /// Raspberry Pi
@@ -95,38 +82,49 @@ namespace Microsoft.Xna.Framework.Content.Pipeline
         Switch,
 
         /// <summary>
-        /// Google Stadia
-        /// </summary>
-        Stadia,
-
-        /// <summary>
         /// WebAssembly and Bridge.NET
         /// </summary>
-        Web
-    }
+        Web,
 
+        /// <summary>
+        /// All desktop versions using Vulkan.
+        /// </summary>
+        DesktopVK,
+
+        /// <summary>
+        /// Windows using DirectX 12
+        /// </summary>
+        WindowsDX12,
+
+        /// <summary>
+        /// Xbox Series S|X
+        /// </summary>
+        XboxSeries,
+
+        /// <summary>
+        /// Nintendo Switch 2
+        /// </summary>
+        Switch2,
+    }
 
     /// <summary>
     /// Deserialize legacy Platforms from .MGCB files.
     /// </summary>
-    internal class TargetPlatformTypeConverter : EnumConverter
+    internal class TargetPlatformTypeConverter(Type type) : EnumConverter(type)
     {
-        public TargetPlatformTypeConverter(Type type) : base(type)
-        {
-        }
-
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
         {   
             try
             {
                 return base.ConvertFrom(context, culture, value);
             }
-            catch (FormatException fex)
+            catch (FormatException)
             { 
                 // convert legacy Platforms
                 if (value.Equals("Linux") || value.Equals("WindowsGL"))
                     return TargetPlatform.DesktopGL;
-                else throw fex;
+                else
+                    throw;
             }
         }
     }

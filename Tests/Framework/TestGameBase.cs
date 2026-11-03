@@ -1,4 +1,4 @@
-﻿// MonoGame - Copyright (C) The MonoGame Team
+﻿// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
@@ -30,17 +30,18 @@ namespace MonoGame.Tests {
 #if XNA
             Content.RootDirectory = AppDomain.CurrentDomain.BaseDirectory;
 #endif
-            // We do all the tests using the reference device to
-            // avoid driver glitches and get consistant rendering.
+            // We do all the tests using the reference/warp device to
+            // avoid driver glitches and get consistent rendering.
             GraphicsAdapter.UseReferenceDevice = true;
+            GraphicsAdapter.UseDriverType = GraphicsAdapter.DriverType.FastSoftware;
 
             Services.AddService<IFrameInfoSource>(this);
 			SuppressExtraUpdatesAndDraws = true;
-		}
+        }
 
-		#region IFrameInfoSource Implementation
+        #region IFrameInfoSource Implementation
 
-		private FrameInfo _frameInfo;
+        private FrameInfo _frameInfo;
 		public FrameInfo FrameInfo
 		{
 			get { return _frameInfo; }
@@ -231,12 +232,12 @@ namespace MonoGame.Tests {
             Exit();
 #else
             // NOTE: We avoid Game.Exit() here as we marked it
-            // obsolute on platforms that disallow exit in 
+            // obsolete on platforms that disallow exit in 
             // shipping games.
             //
             // We however need it here to halt the app after we
             // complete running all the unit tests.  So we do the
-            // next best thing can call the interal platform code
+            // next best thing can call the internal platform code
             // directly which produces the same result.
             Platform.Exit();
             SuppressDraw();

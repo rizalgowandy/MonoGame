@@ -1,101 +1,103 @@
-﻿// MonoGame - Copyright (C) The MonoGame Team
+﻿// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content.Pipeline.Graphics;
 
 namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
 {
-	[ContentProcessorAttribute(DisplayName="Font Texture - MonoGame")]
-	public class FontTextureProcessor : ContentProcessor<Texture2DContent, SpriteFontContent>
-	{
-		private Color transparentPixel = Color.Magenta;
+    /// <summary>
+    /// Class to provide methods to handle processing of font textures.
+    /// </summary>
+    [ContentProcessor(DisplayName = "Font Texture - MonoGame")]
+    public class FontTextureProcessor : ContentProcessor<Texture2DContent, SpriteFontContent>
+    {
+        private readonly Color _transparentPixel = Color.Magenta;
 
-		[DefaultValue(' ')]
-		public virtual char FirstCharacter { get; set; }
+        /// <summary>
+        /// Gets or sets the first character of the font.
+        /// </summary>
+        [DefaultValue(' ')]
+        public virtual char FirstCharacter { get; set; } = ' ';
 
-		[DefaultValue (true)]
-		public virtual bool PremultiplyAlpha { get; set; }
+        /// <summary>
+        /// Gets or sets the flag that indicates if the alpha channel should be premultiplied.
+        /// </summary>
+        [DefaultValue(true)]
+        public virtual bool PremultiplyAlpha { get; set; } = true;
 
-		public virtual TextureProcessorOutputFormat TextureFormat { get; set; }
+        /// <inheritdoc cref="TextureProcessorOutputFormat"/>
+        public virtual TextureProcessorOutputFormat TextureFormat { get; set; }
 
-		public FontTextureProcessor ()
-		{
-		    FirstCharacter = ' ';
-		    PremultiplyAlpha = true;
-		}
+        /// <summary>
+        /// Gets the character for the specified index relative to the first character.
+        /// </summary>
+        /// <param name="index">Character index.</param>
+        /// <returns>Character at index.</returns>
+        protected virtual char GetCharacterForIndex(int index) => (char)(FirstCharacter + index);
 
-		protected virtual char GetCharacterForIndex (int index)
-		{
-			return (char)(((int)FirstCharacter) + index);
-		}
-
-        private List<Glyph> ExtractGlyphs(PixelBitmapContent<Color> bitmap)
-		{
-			var glyphs = new List<Glyph>(); 
-			var regions = new List<Rectangle>();
-			for (int y = 0; y < bitmap.Height; y++)
+        private List<GlyphData> ExtractGlyphs(PixelBitmapContent<Color> bitmap)
+        {
+            var glyphs = new List<GlyphData>();
+            var regions = new List<Rectangle>();
+            for (var y = 0; y < bitmap.Height; y++)
             {
-				for (int x = 0; x < bitmap.Width; x++)
+                for (var x = 0; x < bitmap.Width; x++)
                 {
-					if (bitmap.GetPixel(x, y) != transparentPixel)
+                    if (bitmap.GetPixel(x, y) != _transparentPixel)
                     {
-						// if we don't have a region that has this pixel already
-						var re = regions.Find(r => {
-							return r.Contains(x, y); 
-						});
-						if (re == Rectangle.Empty)
+                        // if we don't have a region that has this pixel already
+                        var re = regions.Find(r => r.Contains(x, y));
+                        if (re == Rectangle.Empty)
                         {
-							// we have found the top, left of a image. 
-							// we now need to scan for the 'bounds'
-							int top = y;
-							int bottom = y;
-							int left = x;
-							int right = x;
-							while (bitmap.GetPixel(right, bottom) != transparentPixel)
-								right++;
-							while (bitmap.GetPixel(left, bottom) != transparentPixel)
-								bottom++;
-							// we got a glyph :)
-							regions.Add(new Rectangle(left, top, right - left, bottom - top));
-							x = right;
-						}
+                            // we have found the top, left of a image.
+                            // we now need to scan for the 'bounds'
+                            var top = y;
+                            var bottom = y;
+                            var left = x;
+                            var right = x;
+                            while (bitmap.GetPixel(right, bottom) != _transparentPixel)
+                                right++;
+                            while (bitmap.GetPixel(left, bottom) != _transparentPixel)
+                                bottom++;
+                            // we got a glyph :)
+                            regions.Add(new Rectangle(left, top, right - left, bottom - top));
+                            x = right;
+                        }
                         else
                         {
-							x += re.Width;
-						}
-					}
-				}
-			}
+                            x += re.Width;
+                        }
+                    }
+                }
+            }
 
-			for (int i = 0; i < regions.Count; i++)
+            for (int i = 0; i < regions.Count; i++)
             {
-				var rect = regions[i];
+                var rect = regions[i];
                 var newBitmap = new PixelBitmapContent<Color>(rect.Width, rect.Height);
                 BitmapContent.Copy(bitmap, rect, newBitmap, new Rectangle(0, 0, rect.Width, rect.Height));
-				var glyph = new Glyph(GetCharacterForIndex (i), newBitmap);
-			    glyph.CharacterWidths.B = glyph.Bitmap.Width;
-			    glyphs.Add(glyph);
+                var glyphData = new GlyphData((uint)i, newBitmap);
+                glyphData.CharacterWidths.B = glyphData.Bitmap.Width;
+                glyphs.Add(glyphData);
                 //newbitmap.Save (GetCharacterForIndex(i)+".png", System.Drawing.Imaging.ImageFormat.Png);
-			}
-			return glyphs ;
-		}
+            }
+            return glyphs;
+        }
 
-		public override SpriteFontContent Process(Texture2DContent input, ContentProcessorContext context)
-		{
-			var output = new SpriteFontContent();
+        /// <inheritdoc/>
+        public override SpriteFontContent Process(Texture2DContent input, ContentProcessorContext context)
+        {
+            var output = new SpriteFontContent();
 
-			// extract the glyphs from the texture and map them to a list of characters.
-			// we need to call GtCharacterForIndex for each glyph in the Texture to 
-			// get the char for that glyph, by default we start at ' ' then '!' and then ASCII
-			// after that.
-            BitmapContent face = input.Faces[0][0];
-            SurfaceFormat faceFormat;
-            face.TryGetFormat(out faceFormat);
+            // extract the glyphs from the texture and map them to a list of characters.
+            // we need to call GtCharacterForIndex for each glyph in the Texture to
+            // get the char for that glyph, by default we start at ' ' then '!' and then ASCII
+            // after that.
+            var face = input.Faces[0][0];
+            face.TryGetFormat(out var faceFormat);
             if (faceFormat != SurfaceFormat.Color)
             {
                 var colorFace = new PixelBitmapContent<Color>(face.Width, face.Height);
@@ -104,32 +106,31 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
             }
 
             var glyphs = ExtractGlyphs((PixelBitmapContent<Color>)face);
-			// Optimize.
-			foreach (var glyph in glyphs)
+            // Optimize.
+            foreach (var glyph in glyphs)
             {
-				GlyphCropper.Crop(glyph);
-                output.VerticalLineSpacing = Math.Max(output.VerticalLineSpacing, glyph.Subrect.Height);
-			}
+                GlyphCropper.Crop(glyph);
+                output.VerticalLineSpacing = Math.Max(output.VerticalLineSpacing, glyph.SubRect.Height);
+            }
 
             // Get the platform specific texture profile.
             var texProfile = TextureProfile.ForPlatform(context.TargetPlatform);
 
             // We need to know how to pack the glyphs.
-            bool requiresPot, requiresSquare;
-            texProfile.Requirements(context, TextureFormat, out requiresPot, out requiresSquare);
+            texProfile.Requirements(context, TextureFormat, out var requiresPot, out var requiresSquare);
 
             face = GlyphPacker.ArrangeGlyphs(glyphs.ToArray(), requiresPot, requiresSquare);
-			
-			foreach (var glyph in glyphs)
+
+            foreach (var glyph in glyphs)
             {
-				output.CharacterMap.Add(glyph.Character);
-				output.Glyphs.Add(new Rectangle (glyph.Subrect.X, glyph.Subrect.Y, glyph.Subrect.Width, glyph.Subrect.Height));
+                output.CharacterMap.Add(GetCharacterForIndex((int)glyph.GlyphIndex));
+                output.Glyphs.Add(new Rectangle(glyph.SubRect.X, glyph.SubRect.Y, glyph.SubRect.Width, glyph.SubRect.Height));
                 output.Cropping.Add(new Rectangle((int)glyph.XOffset, (int)glyph.YOffset, glyph.Width, glyph.Height));
-				var abc = glyph.CharacterWidths;
-				output.Kerning.Add(new Vector3(abc.A, abc.B, abc.C));
-			}
-			
-			output.Texture.Faces[0].Add(face);
+                var abc = glyph.CharacterWidths;
+                output.Kerning.Add(new Vector3(abc.A, abc.B, abc.C));
+            }
+
+            output.Texture.Faces[0].Add(face);
 
             var bmp = output.Texture.Faces[0][0];
             if (PremultiplyAlpha)
@@ -158,7 +159,7 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
             // Perform the final texture conversion.
             texProfile.ConvertTexture(context, output.Texture, TextureFormat, true);
 
-			return output;
-		}
-	}
+            return output;
+        }
+    }
 }

@@ -1,4 +1,4 @@
-﻿// MonoGame - Copyright (C) The MonoGame Team
+﻿// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
@@ -83,6 +83,17 @@ namespace MonoGame.OpenGL
                 return;
 
             GraphicsDevice.DisposeContext(_context);
+            _context = IntPtr.Zero;
+            _disposed = true;
+        }
+
+        internal void DisposeImmediately()
+        {
+            if (_disposed)
+                return;
+
+            Sdl.GL.MakeCurrent(_winHandle, IntPtr.Zero);
+            Sdl.GL.DeleteContext(_context);
             _context = IntPtr.Zero;
             _disposed = true;
         }

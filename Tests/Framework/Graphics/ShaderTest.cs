@@ -1,4 +1,4 @@
-// MonoGame - Copyright (C) The MonoGame Team
+// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
@@ -9,9 +9,11 @@ using NUnit.Framework;
 
 namespace MonoGame.Tests.Graphics
 {
-	[TestFixture]
+    [NonParallelizable]
+	[RunOnUiTestFixture]
 	class ShaderTest : GraphicsDeviceTestFixtureBase
     {
+        [Test]
 		[TestCase("NoEffect")]
 		[TestCase("HighContrast")]
 		[TestCase("Bevels")]
@@ -19,7 +21,7 @@ namespace MonoGame.Tests.Graphics
 		[TestCase("ColorFlip")]
 		[TestCase("Invert")]
 		[TestCase("BlackOut")]
-#if !DESKTOPGL
+#if !DESKTOPGL && !DESKTOPGL4
         // TODO this does not render for some reason, we need to fix this
         [TestCase("RainbowH")]
 #endif

@@ -1,4 +1,4 @@
-// MonoGame - Copyright (C) The MonoGame Team
+// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
@@ -26,12 +26,17 @@ namespace Microsoft.Xna.Framework.Media
 
             SharpDX.MediaFoundation.MediaSource mediaSource;
             {
-                SourceResolver resolver = new SourceResolver();
+                using SourceResolver resolver = new SourceResolver();
+                using ComObject source = (ComObject)resolver.CreateObjectFromURL(FilePath,
+                    SourceResolverFlags.MediaSource,
+                    null,
+                    out ObjectType objectType);
+                if (objectType != ObjectType.MediaSource)
+                {
+                    throw new NotSupportedException($"{FilePath} is not a media source.");
+                }
 
-                ComObject source = resolver.CreateObjectFromURL(FilePath, SourceResolverFlags.MediaSource);
                 mediaSource = source.QueryInterface<SharpDX.MediaFoundation.MediaSource>();
-                resolver.Dispose();
-                source.Dispose();
             }
 
             PresentationDescriptor presDesc;
@@ -105,11 +110,6 @@ namespace Microsoft.Xna.Framework.Media
             return null;
         }
 
-        private TimeSpan PlatformGetDuration()
-        {
-            return _duration;
-        }
-
         private bool PlatformIsProtected()
         {
             return false;
@@ -118,11 +118,6 @@ namespace Microsoft.Xna.Framework.Media
         private bool PlatformIsRated()
         {
             return false;
-        }
-
-        private string PlatformGetName()
-        {
-            return Path.GetFileNameWithoutExtension(_name);
         }
 
         private int PlatformGetPlayCount()

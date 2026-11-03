@@ -1,4 +1,4 @@
-﻿// MonoGame - Copyright (C) The MonoGame Team
+﻿// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
@@ -28,6 +28,9 @@ namespace MonoGame.Tests.ContentPipeline
 #else
         const string DudeFbx = "Assets/Models/Dude/dude_2011.fbx";
 #endif
+        const string PivotModel = "Assets/Models/Wood_Calf_R.FBX";
+
+        const string SpaceShip = "Assets/Models/spaceship.fbx";
 
         [Test]
         public void Arguments()
@@ -48,13 +51,73 @@ namespace MonoGame.Tests.ContentPipeline
         }
 
         [Test]
-#if DESKTOPGL
-        [Ignore("Disabled until latest NVTT is merged on Mac!")]
-#endif
-        public void Dude()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void IgnoreFbxUpDirectionTest(bool ignoreFbxUpDirection)
         {
             var context = new TestImporterContext("TestObj", "TestBin");
-            var importer = new FbxImporter();
+            var importer = new FbxImporter()
+            {
+                IgnoreFbxUpDirection = ignoreFbxUpDirection,
+            };
+
+            var nodeContent = importer.Import(SpaceShip, context);
+            var matrixUp = new Matrix(
+                0, 0, 1, 0,
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 0, 1
+            );
+            Assert.AreEqual("RootNode", nodeContent.Name);
+            Assert.IsNull(nodeContent.Parent);
+            Matrix expected = ignoreFbxUpDirection ? Matrix.Identity : matrixUp;
+
+            Assert.That(expected, Is.EqualTo(nodeContent.Transform).Using(MatrixComparer.Epsilon));
+        }
+
+        [Test]
+        [TestCase(true)]
+        [TestCase(false)]
+        public void PreservePivotsTest(bool preservePivots)
+        {
+            var context = new TestImporterContext("TestObj", "TestBin");
+            var importer = new FbxImporter()
+            {
+                PreservePivots = preservePivots,
+            };
+
+            var nodeContent = importer.Import(PivotModel, context);
+            
+            Assert.AreEqual("leg_down_L03", nodeContent.Name);
+            Assert.IsNull(nodeContent.Parent);
+            Assert.IsInstanceOf<MeshContent>(nodeContent);
+            Assert.AreEqual(0, nodeContent.Children.Count);
+            Assert.AreEqual(0, nodeContent.Animations.Count);
+
+            Matrix expected = preservePivots
+                ? new Matrix(-0.005680f,  0.995421f, -0.095419f, 0f,
+                            0.059148f,  0.095588f,  0.993662f, 0f,
+                            0.998233f,  0.000000f, -0.059420f, 0f,
+                            -1.361540f, -0.737987f, -14.212430f, 1f)
+                : new Matrix(-0.005680f, -0.095419f, -0.995421f, 0f,
+                            0.998233f, -0.059420f,  0.000000f, 0f,
+                            -0.059148f, -0.993662f,  0.095588f, 0f,
+                            0.111688f, 14.296122f, -0.003237f, 1f);
+
+            Assert.That(expected, Is.EqualTo(nodeContent.Transform).Using(MatrixComparer.Epsilon));
+            Assert.AreEqual(nodeContent.Transform, nodeContent.AbsoluteTransform);
+        }
+
+        [Test]
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Dude(bool preservePivots)
+        {
+            var context = new TestImporterContext("TestObj", "TestBin");
+            var importer = new FbxImporter()
+            {
+                PreservePivots = preservePivots,
+            };
 
             var nodeContent = importer.Import(DudeFbx, context);
 
@@ -229,7 +292,7 @@ namespace MonoGame.Tests.ContentPipeline
             // returned a bigger animation duration that is correct.  Looking
             // at the content of the FBX ascii i can see the math is:
             // 
-            //  (57732697500 - 1924423250) / 46186158000 = 1.208 seconds
+            //  (57732697500 - 1924423250) / 46186158000 = 1.2083333 seconds
             //
             // Which is the correct result and what our FBX importer returns.
             // I highly suspect that XNA was wrong.
@@ -239,7 +302,7 @@ namespace MonoGame.Tests.ContentPipeline
 #if XNA
             Assert.AreEqual(12670000, animationContent.Duration.Ticks);
 #else
-            Assert.AreEqual(12080000, animationContent.Duration.Ticks);            
+            Assert.AreEqual(12083333, animationContent.Duration.Ticks);            
 #endif
 
             // TODO: XNA assigns the identity to null on all NodeContent

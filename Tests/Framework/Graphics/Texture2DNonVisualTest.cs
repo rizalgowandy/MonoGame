@@ -1,10 +1,11 @@
-﻿// MonoGame - Copyright (C) The MonoGame Team
+﻿// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NUnit.Framework;
@@ -12,11 +13,13 @@ using StbImageSharp;
 
 namespace MonoGame.Tests.Graphics
 {
-    [TestFixture]
+    [NonParallelizable]
+    [RunOnUiTestFixture]
     internal class Texture2DNonVisualTest : GraphicsDeviceTestFixtureBase
     {
         Texture2D _texture;
 
+        [Test]
 #if !XNA
         [TestCase("Assets/Textures/LogoOnly_64px.bmp")]
         [TestCase("Assets/Textures/LogoOnly_64px.tga")]
@@ -47,11 +50,10 @@ namespace MonoGame.Tests.Graphics
             _texture = null;
         }
 
+        [Test]
 #if XNA
         [TestCase("Assets/Textures/LogoOnly_64px.bmp")]
 #endif
-        // not supported
-        [TestCase("Assets/Textures/LogoOnly_64px.tif")]
         [TestCase("Assets/Textures/LogoOnly_64px.dds")]
         [TestCase("Assets/Textures/SampleCube64DXT1Mips.dds")]
         public void FromStreamShouldFailTest(string filename)
@@ -123,7 +125,7 @@ namespace MonoGame.Tests.Graphics
             }
         }
 
-        [TestCase]
+        [Test]
         public void FromStreamNotPremultiplied()
         {
             // XNA will not try to premultiply your image on
@@ -148,7 +150,7 @@ namespace MonoGame.Tests.Graphics
             }
         }
 
-        [TestCase]
+        [Test]
         public void FromStreamAtTheEnd()
         {
             // Check whether texture can be loaded if a stream being at its end
@@ -177,7 +179,7 @@ namespace MonoGame.Tests.Graphics
             }
         }
 
-        [TestCase]
+        [Test]
         public void FromStreamBlackAlpha()
         {
             // XNA will make any pixel with an alpha value
@@ -201,7 +203,7 @@ namespace MonoGame.Tests.Graphics
                 }
             }
         }
-        
+
         [Test]
         public void ZeroSizeShouldFailTest()
         {
@@ -237,6 +239,7 @@ namespace MonoGame.Tests.Graphics
             }
         }
 
+        [Test]
         [TestCase(25, 23, 1, 1, 0, 1)]
         [TestCase(25, 23, 1, 1, 1, 1)]
         [TestCase(25, 23, 2, 1, 0, 2)]
@@ -265,6 +268,7 @@ namespace MonoGame.Tests.Graphics
                 t.Dispose();
             }
         }
+        [Test]
         [TestCase(25, 23, 2, 2, 0, 2)]
         [TestCase(25, 23, 2, 2, 1, 2)]
         public void GetDataException(int rx, int ry, int rw, int rh, int startIndex, int elementsToRead)
@@ -284,6 +288,7 @@ namespace MonoGame.Tests.Graphics
             }
         }
 
+        [Test]
         [TestCase(4096)]
         public void SetData1ParameterGoodTest(int arraySize)
         {
@@ -322,6 +327,7 @@ namespace MonoGame.Tests.Graphics
             }
         }
 
+        [Test]
         [TestCase(2000)]
         [TestCase(4095)]
         [TestCase(2000000)]
@@ -352,10 +358,13 @@ namespace MonoGame.Tests.Graphics
             }
         }
 
+        [Test]
         [TestCase(SurfaceFormat.HalfSingle, (short)(160 << 8 + 120))]
 #if !DESKTOPGL
         // format not supported
         [TestCase(SurfaceFormat.Vector4, (long)(200 << 48 + 180 << 32 + 160 << 16 + 120))]
+        [TestCase(SurfaceFormat.Bgr32, (uint)((200u << 24) | (180u << 16) | (160u << 8) | 120u))]
+        [TestCase(SurfaceFormat.Bgr32SRgb, (uint)((200u << 24) | (180u << 16) | (160u << 8) | 120u))]
 #endif
         [TestCase(SurfaceFormat.Vector2, (float)(200 << 48 + 180 << 32 + 160 << 16 + 120))]
         [TestCase(SurfaceFormat.Color, (float)(200 << 24 + 180 << 16 + 160 << 8 + 120))]
@@ -390,6 +399,7 @@ namespace MonoGame.Tests.Graphics
             t.Dispose();
         }
 
+        [Test]
         [TestCase(SurfaceFormat.Color, (long)0)]
         [TestCase(SurfaceFormat.HalfSingle, (float)0)]
         public void SetDataFormatFailingTestTBufferTooLarge<TBuffer>(SurfaceFormat format, TBuffer value) where TBuffer : struct
@@ -444,6 +454,8 @@ namespace MonoGame.Tests.Graphics
                 case SurfaceFormat.HalfSingle:
                     return 2;
                 case SurfaceFormat.Single:
+                case SurfaceFormat.Bgr32:
+                case SurfaceFormat.Bgr32SRgb:
                 case SurfaceFormat.Color:
                     return 4;
                 case SurfaceFormat.Vector2:
@@ -455,6 +467,7 @@ namespace MonoGame.Tests.Graphics
             }
         }
 
+        [Test]
         [TestCase(4200, 0, 4096)]
         [TestCase(4097, 1, 4096)]
         [TestCase(4097, 0, 4096)]
@@ -496,6 +509,7 @@ namespace MonoGame.Tests.Graphics
             }
         }
 
+        [Test]
         [TestCase(2000, 0, 4096)]
         [TestCase(4095, 0, 4095)]
         [TestCase(4095, 1, 4095)]
@@ -536,6 +550,7 @@ namespace MonoGame.Tests.Graphics
             }
         }
 
+        [Test]
         [TestCase(4096, 0, 4096, 0, 0, 64, 64)]
         [TestCase(4096, 0, 3969, 1, 1, 63, 63)]
         [TestCase(3969, 0, 3969, 1, 1, 63, 63)]
@@ -582,6 +597,7 @@ namespace MonoGame.Tests.Graphics
                 t.Dispose();
             }
         }
+        [Test]
         [TestCase(3844, 0, 3844, 1, 1, 63, 63)]
         [TestCase(3845, 1, 3844, 1, 1, 63, 63)]
         [TestCase(3969, 0, 4096, 1, 1, 63, 63)]
@@ -640,6 +656,299 @@ namespace MonoGame.Tests.Graphics
             }
         }
 
+#if VULKAN || DIRECTX12
+        [Test]
+        [TestCase(4096)]
+        public void SetDataWithSpan1ParameterGoodTest(int arraySize)
+        {
+            using (System.IO.StreamReader reader = new System.IO.StreamReader("Assets/Textures/LogoOnly_64px.png"))
+            {
+                Color[] data = new Color[arraySize];
+                
+                Color[] reference = new Color[4096];
+                Color[] written = new Color[4096];
+                for (int i = 0; i < arraySize; i++)
+                {
+                    data[i] = Color.White;
+                }
+                ReadOnlySpan<Color> dataAsSpan = data.AsSpan();
+                Texture2D t = Texture2D.FromStream(gd, reader.BaseStream);
+                t.GetData(reference);
+                t.SetData(dataAsSpan);
+                t.GetData(written);
+                for (int i = 0; i < written.Length; i++)
+                {
+                    if (i < arraySize)
+                    {
+                        Assert.AreEqual(255, written[i].R, "Bad color written in position:{0};", i);
+                        Assert.AreEqual(255, written[i].G, "Bad color written in position:{0};", i);
+                        Assert.AreEqual(255, written[i].B, "Bad color written in position:{0};", i);
+                        Assert.AreEqual(255, written[i].A, "Bad color written in position:{0};", i);
+                    }
+                    else
+                    {
+                        Assert.AreEqual(reference[i].R, written[i].R, "Color written in position:{0}; beyond array data", i);
+                        Assert.AreEqual(reference[i].G, written[i].G, "Color written in position:{0}; beyond array data", i);
+                        Assert.AreEqual(reference[i].B, written[i].B, "Color written in position:{0}; beyond array data", i);
+                        Assert.AreEqual(reference[i].A, written[i].A, "Color written in position:{0}; beyond array data", i);
+                    }
+                }
+
+                t.Dispose();
+            }
+        }
+
+        [Test]
+        [TestCase(2000)]
+        [TestCase(4095)]
+        [TestCase(2000000)]
+        [TestCase(4097)]
+        public void SetDataWithSpan1ParameterExceptionTest(int arraySize)
+        {
+            using (System.IO.StreamReader reader = new System.IO.StreamReader("Assets/Textures/LogoOnly_64px.png"))
+            {
+                Color[] data = new Color[arraySize];
+                Color[] reference = new Color[4096];
+                Color[] written = new Color[4096];
+                for (int i = 0; i < arraySize; i++)
+                {
+                    data[i] = Color.White;
+                }
+                ReadOnlySpan<Color> dataAsSpan = data.AsSpan();
+                Texture2D t = Texture2D.FromStream(gd, reader.BaseStream);
+                t.GetData(reference);
+                // Span is ref local and can't be passed in the lambda for Assert.Throws, hence the try-catch
+                bool exceptionThrown = false;
+                try
+                {
+                    t.SetData(dataAsSpan);
+                }
+                catch (Exception ex)
+                {
+                    exceptionThrown = true;
+                }
+                Assert.True(exceptionThrown);
+                t.GetData(written);
+                for (int i = 0; i < written.Length; i++)
+                {
+                    Assert.AreEqual(reference[i].R, written[i].R, "Bad color written in position:{0};", i);
+                    Assert.AreEqual(reference[i].G, written[i].G, "Bad color written in position:{0};", i);
+                    Assert.AreEqual(reference[i].B, written[i].B, "Bad color written in position:{0};", i);
+                    Assert.AreEqual(reference[i].A, written[i].A, "Bad color written in position:{0};", i);
+                }
+                t.Dispose();
+            }
+        }
+
+        [Test]
+        [TestCase(SurfaceFormat.HalfSingle, (short)(160 << 8 + 120))]
+        // format not supported
+        [TestCase(SurfaceFormat.Vector4, (long)(200 << 48 + 180 << 32 + 160 << 16 + 120))]
+        [TestCase(SurfaceFormat.Vector2, (float)(200 << 48 + 180 << 32 + 160 << 16 + 120))]
+        [TestCase(SurfaceFormat.Color, (float)(200 << 24 + 180 << 16 + 160 << 8 + 120))]
+        [TestCase(SurfaceFormat.Color, (byte)150)]
+        [TestCase(SurfaceFormat.Color, (short)(160 << 8 + 120))]
+        [TestCase(SurfaceFormat.Single, (byte)150)]
+        [TestCase(SurfaceFormat.Single, (short)(160 << 8 + 120))]
+        [TestCase(SurfaceFormat.Single, (float)(200 << 24 + 180 << 16 + 160 << 8 + 120))]
+        public void SetDataASSpanFormatTest<TBuffer>(SurfaceFormat format, TBuffer value) where TBuffer : struct
+        {
+            const int textureSize = 16;
+
+            var surfaceFormatSize = GetFormatSize(format);
+            var textureSizeBytes = textureSize * surfaceFormatSize;
+
+            var tSizeBytes = Marshal.SizeOf(typeof(TBuffer));
+            var bufferSize = textureSizeBytes / tSizeBytes;
+
+            var buffer = new TBuffer[bufferSize];
+            for (var i = 0; i < bufferSize; i++)
+                buffer[i] = value;
+
+            var t = new Texture2D(gd, textureSize, 1, false, format);
+            ReadOnlySpan<TBuffer>bufferAsSpan = buffer.AsSpan();
+            t.SetData(bufferAsSpan);
+
+            var buffer2 = new TBuffer[bufferSize];
+            t.GetData(buffer2);
+
+            for (var i = 0; i < buffer.Length; i++)
+                Assert.AreEqual(buffer[i], buffer2[i]);
+
+            t.Dispose();
+        }
+
+        [Test]
+        [TestCase(SurfaceFormat.Color, (long)0)]
+        [TestCase(SurfaceFormat.HalfSingle, (float)0)]
+        public void SetDataWithSpanFormatFailingTestTBufferTooLarge<TBuffer>(SurfaceFormat format, TBuffer value) where TBuffer : struct
+        {
+            const int textureSize = 16;
+
+            var surfaceFormatSize = GetFormatSize(format);
+            var textureSizeBytes = textureSize * surfaceFormatSize;
+
+            var tSizeBytes = Marshal.SizeOf(typeof(TBuffer));
+            var bufferSize = textureSizeBytes / tSizeBytes;
+
+            var buffer = new TBuffer[bufferSize];
+            for (var i = 0; i < bufferSize; i++)
+                buffer[i] = value;
+
+            var t = new Texture2D(gd, textureSize, 1, false, format);
+            ReadOnlySpan<TBuffer> bufferAsSpan = buffer.AsSpan();
+            // Span is ref local and can't be passed in the lambda for Assert.Throws, hence the try-catch
+            bool exceptionThrown = false;
+            try
+            {
+                t.SetData(bufferAsSpan);
+            }
+            catch (ArgumentException ex)
+            {
+                exceptionThrown = true;
+            }
+            Assert.True(exceptionThrown);
+
+            t.Dispose();
+        }
+
+        [Test]
+        public void SetDataWithSpanFormatFailingTestModTBufferNotZero()
+        {
+            const int textureSize = 12;
+            var format = SurfaceFormat.Vector4;
+            var value = new Vector3(20, 15, 18);
+
+            var surfaceFormatSize = GetFormatSize(format);
+            var textureSizeBytes = textureSize * surfaceFormatSize;
+
+            var tSizeBytes = 12;
+            var bufferSize = textureSizeBytes / tSizeBytes;
+
+            var buffer = new Vector3[bufferSize];
+            for (var i = 0; i < bufferSize; i++)
+                buffer[i] = value;
+
+            var t = new Texture2D(gd, textureSize, 1, false, format);
+            ReadOnlySpan<Vector3> bufferAsSpan = buffer.AsSpan();
+            // Span is ref local and can't be passed in the lambda for Assert.Throws, hence the try-catch
+            bool exceptionThrown = false;
+            try
+            {
+                t.SetData(bufferAsSpan);
+            }
+            catch (ArgumentException ex)
+            {
+                exceptionThrown = true;
+            }
+            Assert.True(exceptionThrown);
+
+            t.Dispose();
+        }
+
+        [Test]
+        [TestCase(4096, false)]
+        [TestCase(4096, true)]
+        public void SetDataWithSpan3And4ParameterGoodTest(int arraySize, bool use4Params)
+        {
+            using (System.IO.StreamReader reader = new System.IO.StreamReader("Assets/Textures/LogoOnly_64px.png"))
+            {
+                Color[] data = new Color[arraySize];
+                Color[] written = new Color[4096];
+                Color[] reference = new Color[4096];
+                for (int i = 0; i < arraySize; i++)
+                {
+                    data[i] = Color.White;
+                }
+                Texture2D t = Texture2D.FromStream(gd, reader.BaseStream);
+                ReadOnlySpan<Color> dataAsSpan = data.AsSpan();
+                t.GetData(reference);
+                if(use4Params)
+                {
+                    t.SetData(0, new Rectangle(0, 0, 64, 64), dataAsSpan);
+                }
+                else
+                {
+                    t.SetData(0, 0, new Rectangle(0, 0, 64, 64), dataAsSpan);
+                }
+                
+                t.GetData(written);
+                for (int i = 0; i < written.Length; i++)
+                {
+                    if (i < arraySize)
+                    {
+                        Assert.AreEqual(255, written[i].R, "Bad color written in position:{0};", i);
+                        Assert.AreEqual(255, written[i].G, "Bad color written in position:{0};", i);
+                        Assert.AreEqual(255, written[i].B, "Bad color written in position:{0};", i);
+                        Assert.AreEqual(255, written[i].A, "Bad color written in position:{0};", i);
+                    }
+                    else
+                    {
+                        Assert.AreEqual(reference[i].R, written[i].R, "Color written in position:{0}; beyond array data", i);
+                        Assert.AreEqual(reference[i].G, written[i].G, "Color written in position:{0}; beyond array data", i);
+                        Assert.AreEqual(reference[i].B, written[i].B, "Color written in position:{0}; beyond array data", i);
+                        Assert.AreEqual(reference[i].A, written[i].A, "Color written in position:{0}; beyond array data", i);
+                    }
+                }
+
+                t.Dispose();
+            }
+        }
+
+        [Test]
+        [TestCase(4095, 0, 0, 64, 64, false)]
+        [TestCase(4097, 0, 0, 64, 64, false)]
+        [TestCase(4096, -1, -1, 64, 64, false)]
+        [TestCase(4096, 0, 0, -64, -64, false)]
+        [TestCase(4095, 0, 0, 64, 64, true)]
+        [TestCase(4097, 0, 0, 64, 64, true)]
+        [TestCase(4096, -1, -1, 64, 64, true)]
+        [TestCase(4096, 0, 0, -64, -64, true)]
+        public void SetDataWithSpan3and4ParameterExceptionTest(int arraySize, int x, int y, int w, int h, bool use4Params)
+        { 
+            using (System.IO.StreamReader reader = new System.IO.StreamReader("Assets/Textures/LogoOnly_64px.png"))
+            {
+                Color[] data = new Color[arraySize];
+                Color[] written = new Color[4096];
+                Color[] reference = new Color[4096];
+                for (int i = 0; i < arraySize; i++)
+                {
+                    data[i] = Color.White;
+                }
+                Texture2D t = Texture2D.FromStream(gd, reader.BaseStream);
+                ReadOnlySpan<Color> dataAsSpan = data.AsSpan();
+                t.GetData(reference);
+                bool exceptionThrown = false;
+                try
+                {
+                    if (use4Params)
+                    {
+                        t.SetData(0, new Rectangle(x, y, w, h), dataAsSpan);
+                    }
+                    else
+                    {
+                        t.SetData(0, 0, new Rectangle(x, y, w, h), dataAsSpan);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    exceptionThrown = true;
+                }
+                Assert.True(exceptionThrown);
+                t.GetData(written);
+                for (int i = 0; i < written.Length; i++)
+                {
+                    Assert.AreEqual(reference[i].R, written[i].R, "Bad color written in position:{0};", i);
+                    Assert.AreEqual(reference[i].G, written[i].G, "Bad color written in position:{0};", i);
+                    Assert.AreEqual(reference[i].B, written[i].B, "Bad color written in position:{0};", i);
+                    Assert.AreEqual(reference[i].A, written[i].A, "Bad color written in position:{0};", i);
+                }
+
+                t.Dispose();
+            }
+        }
+#endif
+
         [Test]
         public void GetAndSetDataDxtCompressed()
         {
@@ -696,7 +1005,7 @@ namespace MonoGame.Tests.Graphics
 #endif
         public void LoadOddSizedDxtCompressed()
         {
-            // This is testing that DXT compressed mip levels that 
+            // This is testing that DXT compressed mip levels that
             // are not a multiple of 4 are properly loaded.
 
             var t = content.Load<Texture2D>(Paths.Texture("red_668_dxt"));
@@ -726,12 +1035,13 @@ namespace MonoGame.Tests.Graphics
                     Assert.AreEqual(0,      b2[p + 1]);
                     Assert.AreEqual(0,      b2[p + 2]);
                     Assert.AreEqual(255,    b2[p + 3]);
-                }            
+                }
             }
-                        
+
             t.Dispose();
         }
 
+        [Test]
         // DXT1
         [TestCase(8, "random_16px_dxt", 0)]
         [TestCase(8, "random_16px_dxt", 1)]
@@ -786,6 +1096,7 @@ namespace MonoGame.Tests.Graphics
             t.Dispose();
         }
 
+        [Test]
         [TestCase("random_16px_dxt", 8)]
         [TestCase("random_16px_dxt_alpha", 16)]
         public void GetAndSetDataDxtDontRoundWhenOutsideBounds(string texName, int bs)
@@ -802,6 +1113,7 @@ namespace MonoGame.Tests.Graphics
             t.Dispose();
         }
 
+        [Test]
         [TestCase("random_16px_dxt", 8)]
         [TestCase("random_16px_dxt_alpha", 16)]
         public void GetAndSetDataDxtLowerMips(string texName, int bs)
@@ -817,7 +1129,7 @@ namespace MonoGame.Tests.Graphics
             t.GetData(3, new Rectangle(0,0,2,2), b2, 0, bs);
             t.GetData(4, new Rectangle(0,0,1,1), b2, 0, bs);
             t.SetData(3, new Rectangle(0,0,2,2), b2, 0, bs);
-            
+
             // would be rounded, but the rectangle is outside the texture area so it wil throw before rounding
             Assert.Throws<ArgumentException>(() => t.GetData(3, new Rectangle(1, 1, 2, 2), b, 0, bs));
             Assert.Throws<ArgumentException>(() => t.GetData(3, new Rectangle(0, 0, 3, 3), b, 0, bs));
@@ -825,7 +1137,11 @@ namespace MonoGame.Tests.Graphics
             t.Dispose();
         }
 
+
         [Test]
+#if VULKAN
+        [Ignore("Not Bgr565 on Mac")]
+#endif
         public void GetDataRowPitch()
         {
             const int w = 5;
@@ -837,17 +1153,18 @@ namespace MonoGame.Tests.Graphics
                 data[i] = (short) i;
             tex.SetData(data);
             var getData = new short[size];
-            tex.GetData(data);
+            tex.GetData(getData);
             for (var i = 0; i < getData.Length; i++)
-                Assert.AreEqual((short) i, data[i]);
+                Assert.AreEqual((short) i, getData[i]);
 
             tex.Dispose();
         }
 
+
         [Test]
         public void NullDeviceShouldThrowArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() => 
+            Assert.Throws<ArgumentNullException>(() =>
             {
                 var texture = new Texture2D(null, 16, 16);
                 texture.Dispose();

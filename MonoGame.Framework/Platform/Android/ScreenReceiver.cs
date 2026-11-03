@@ -1,7 +1,7 @@
 using System;
-using Android.Content;
+using global::Android.Content;
 using Microsoft.Xna.Framework.Media;
-using Android.App;
+using global::Android.App;
 
 namespace Microsoft.Xna.Framework
 {
@@ -11,7 +11,7 @@ namespace Microsoft.Xna.Framework
 		
 		public override void OnReceive(Context context, Intent intent)
 		{
-			Android.Util.Log.Info("MonoGame", intent.Action.ToString());
+			global::Android.Util.Log.Info("MonoGame", intent.Action.ToString());
 			if(intent.Action == Intent.ActionScreenOff)
 			{
                 OnLocked();
@@ -24,8 +24,13 @@ namespace Microsoft.Xna.Framework
                 // and if not re-enable the game related functions.
                 // http://stackoverflow.com/questions/4260794/how-to-tell-if-device-is-sleeping
                 KeyguardManager keyguard = (KeyguardManager)context.GetSystemService(Context.KeyguardService);
-                if (!keyguard.InKeyguardRestrictedInputMode())
-                    OnUnlocked();
+                if (!OperatingSystem.IsAndroidVersionAtLeast (28)) {
+                    if (!keyguard.InKeyguardRestrictedInputMode())
+                        OnUnlocked();
+                } else {
+                    if (!keyguard.IsDeviceLocked)
+                        OnUnlocked();
+                }
 			}
 			else if(intent.Action == Intent.ActionUserPresent)
 			{

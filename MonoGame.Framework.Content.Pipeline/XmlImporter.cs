@@ -1,4 +1,4 @@
-﻿// MonoGame - Copyright (C) The MonoGame Team
+﻿// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
@@ -23,8 +23,8 @@ namespace Microsoft.Xna.Framework.Content.Pipeline
         /// <returns>The imported game asset.</returns>
         public override object Import(string filename, ContentImporterContext context)
         {
-            using (var reader = XmlReader.Create(filename))
-                return IntermediateSerializer.Deserialize<object>(reader, filename);
+            using var reader = XmlReader.Create(filename);
+            return IntermediateSerializer.Deserialize<object>(reader, filename);
         }
     }
 }

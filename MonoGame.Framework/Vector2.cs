@@ -903,6 +903,37 @@ namespace Microsoft.Xna.Framework
         }
 
         /// <summary>
+        /// Round the members of this <see cref="Vector2"/> to the specified number of fractional digits.
+        /// </summary>
+        /// <param name="digits">The number of fractional digits the components will be rounded to.</param>
+        public void Round(int digits)
+        {
+            X = MathF.Round(X, digits);
+            Y = MathF.Round(Y, digits);
+        }
+
+        /// <summary>
+        /// Round the members of this <see cref="Vector2"/> to the specified number of fractional digits, using the specified rounding convention for midpoint values.
+        /// </summary>
+        /// <param name="digits">The number of fractional digits the components will be rounded to.</param>
+        /// <param name="mode">Specification for how to round a component value if it is midway between two other numbers.</param>
+        public void Round(int digits, MidpointRounding mode)
+        {
+            X = MathF.Round(X, digits, mode);
+            Y = MathF.Round(Y, digits, mode);
+        }
+
+        /// <summary>
+        /// Round the members of this <see cref="Vector2"/> towards the nearest integer value, using the specified rounding convention for midpoint values.
+        /// </summary>
+        /// <param name="mode">Specification for how to round a component value if it is midway between two other numbers.</param>
+        public void Round(MidpointRounding mode)
+        {
+            X = MathF.Round(X, mode);
+            Y = MathF.Round(Y, mode);
+        }
+
+        /// <summary>
         /// Creates a new <see cref="Vector2"/> that contains members from another vector rounded to the nearest integer value.
         /// </summary>
         /// <param name="value">Source <see cref="Vector2"/>.</param>
@@ -915,6 +946,46 @@ namespace Microsoft.Xna.Framework
         }
 
         /// <summary>
+        /// Creates a new <see cref="Vector2"/> that contains members from another vector rounded to the specified number of fractional digits.
+        /// </summary>
+        /// <param name="value">Source <see cref="Vector2"/>.</param>
+        /// <param name="digits">The number of fractional digits in the return value's components.</param>
+        /// <returns>The rounded <see cref="Vector2"/>.</returns>
+        public static Vector2 Round(Vector2 value, int digits)
+        {
+            value.X = MathF.Round(value.X, digits);
+            value.Y = MathF.Round(value.Y, digits);
+            return value;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="Vector2"/> that contains members from another vector rounded to the specified number of fractional digits, using the specified rounding convention for midpoint values.
+        /// </summary>
+        /// <param name="value">Source <see cref="Vector2"/>.</param>
+        /// <param name="digits">The number of fractional digits in the return value's components.</param>
+        /// <param name="mode">Specification for how to round a component value if it is midway between two other numbers.</param>
+        /// <returns>The rounded <see cref="Vector2"/>.</returns>
+        public static Vector2 Round(Vector2 value, int digits, MidpointRounding mode)
+        {
+            value.X = MathF.Round(value.X, digits, mode);
+            value.Y = MathF.Round(value.Y, digits, mode);
+            return value;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="Vector2"/> that contains members from another vector rounded to the nearest integer value, using the specified rounding convention for midpoint values.
+        /// </summary>
+        /// <param name="value">Source <see cref="Vector2"/>.</param>
+        /// <param name="mode">Specification for how to round a component value if it is midway between two other numbers.</param>
+        /// <returns>The rounded <see cref="Vector2"/>.</returns>
+        public static Vector2 Round(Vector2 value, MidpointRounding mode)
+        {
+            value.X = MathF.Round(value.X, mode);
+            value.Y = MathF.Round(value.Y, mode);
+            return value;
+        }
+
+        /// <summary>
         /// Creates a new <see cref="Vector2"/> that contains members from another vector rounded to the nearest integer value.
         /// </summary>
         /// <param name="value">Source <see cref="Vector2"/>.</param>
@@ -923,6 +994,43 @@ namespace Microsoft.Xna.Framework
         {
             result.X = MathF.Round(value.X);
             result.Y = MathF.Round(value.Y);
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="Vector2"/> that contains members from another vector rounded to the specified number of fractional digits.
+        /// </summary>
+        /// <param name="value">Source <see cref="Vector2"/>.</param>
+        /// <param name="result">The rounded <see cref="Vector2"/>.</param>
+        /// <param name="digits">The number of fractional digits in the return value's components.</param>
+        public static void Round(ref Vector2 value, out Vector2 result, int digits)
+        {
+            result.X = MathF.Round(value.X, digits);
+            result.Y = MathF.Round(value.Y, digits);
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="Vector2"/> that contains members from another vector rounded to the specified number of fractional digits, using the specified rounding convention for midpoint values.
+        /// </summary>
+        /// <param name="value">Source <see cref="Vector2"/>.</param>
+        /// <param name="result">The rounded <see cref="Vector2"/>.</param>
+        /// <param name="digits">The number of fractional digits in the return value's components.</param>
+        /// <param name="mode">Specification for how to round a component value if it is midway between two other numbers.</param>
+        public static void Round(ref Vector2 value, out Vector2 result, int digits, MidpointRounding mode)
+        {
+            result.X = MathF.Round(value.X, digits, mode);
+            result.Y = MathF.Round(value.Y, digits, mode);
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="Vector2"/> that contains members from another vector rounded to the nearest integer value, using the specified rounding convention for midpoint values.
+        /// </summary>
+        /// <param name="value">Source <see cref="Vector2"/>.</param>
+        /// <param name="result">The rounded <see cref="Vector2"/>.</param>
+        /// <param name="mode">Specification for how to round a component value if it is midway between two other numbers.</param>
+        public static void Round(ref Vector2 value, out Vector2 result, MidpointRounding mode)
+        {
+            result.X = MathF.Round(value.X, mode);
+            result.Y = MathF.Round(value.Y, mode);
         }
 
         /// <summary>
@@ -1187,7 +1295,7 @@ namespace Microsoft.Xna.Framework
             result.X = x;
             result.Y = y;
         }
-
+        
         /// <summary>
         /// Apply transformation on normals within array of <see cref="Vector2"/> by the specified <see cref="Matrix"/> and places the results in an another array.
         /// </summary>
@@ -1252,6 +1360,79 @@ namespace Microsoft.Xna.Framework
                 destinationArray[i] = new Vector2((normal.X * matrix.M11) + (normal.Y * matrix.M21),
                                                   (normal.X * matrix.M12) + (normal.Y * matrix.M22));
             }
+        }
+
+        /// <summary>
+        /// Rotates a vector by the specified number of radians
+        /// </summary>
+        /// <param name="value">The vector to be rotated.</param>
+        /// <param name="radians">The amount to rotate the vector.</param>
+        /// <returns>A rotated copy of value.</returns>
+        /// <remarks>
+        /// A positive angle and negative angle
+        /// would rotate counterclockwise and clockwise,
+        /// respectively
+        /// </remarks>
+        public static Vector2 Rotate(Vector2 value, float radians)
+        {
+            float cos = MathF.Cos(radians);
+            float sin = MathF.Sin(radians);
+
+            return new Vector2(value.X * cos - value.Y * sin, value.X * sin + value.Y * cos);
+        }
+
+        /// <summary>
+        /// Rotates a <see cref="Vector2"/> by the specified number of radians
+        /// </summary>
+        /// <param name="radians">The amount to rotate this <see cref="Vector2"/>.</param>
+        /// <remarks>
+        /// A positive angle and negative angle
+        /// would rotate counterclockwise and clockwise,
+        /// respectively
+        /// </remarks>
+        public void Rotate(float radians)
+        {
+            float cos = MathF.Cos(radians);
+            float sin = MathF.Sin(radians);
+
+            float oldx = X;
+
+            X = X * cos - Y * sin;
+            Y = oldx * sin + Y * cos;
+        }
+
+        /// <summary>
+        /// Rotates a <see cref="Vector2"/> around another <see cref="Vector2"/> representing a location
+        /// </summary>
+        /// <param name="value">The <see cref="Vector2"/> to be rotated</param>
+        /// <param name="origin">The origin location to be rotated around</param>
+        /// <param name="radians">The amount to rotate by in radians</param>
+        /// <returns>The rotated <see cref="Vector2"/></returns>
+        /// <remarks>
+        /// A positive angle and negative angle
+        /// would rotate counterclockwise and clockwise,
+        /// respectively
+        /// </remarks>
+        public static Vector2 RotateAround(Vector2 value, Vector2 origin, float radians)
+        {
+            return Rotate(value - origin, radians) + origin;
+        }
+
+        /// <summary>
+        /// Rotates a <see cref="Vector2"/> around another <see cref="Vector2"/> representing a location
+        /// </summary>
+        /// <param name="origin">The origin location to be rotated around</param>
+        /// <param name="radians">The amount to rotate by in radians</param>
+        /// <remarks>
+        /// A positive angle and negative angle
+        /// would rotate counterclockwise and clockwise,
+        /// respectively
+        /// </remarks>
+        public void RotateAround(Vector2 origin, float radians)
+        {
+            this -= origin;
+            Rotate(radians);
+            this += origin;
         }
 
         /// <summary>

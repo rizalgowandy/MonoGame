@@ -1,4 +1,4 @@
-﻿// MonoGame - Copyright (C) The MonoGame Team
+﻿// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
@@ -6,13 +6,13 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
 {
-    public class Dxt1BitmapContent : DxtBitmapContent
+    /// <summary>
+    /// Provides properties and methods for creating and maintaining a Dxt1 compressed bitmap resource.
+    /// </summary>
+    /// <param name="width">The width, in pixels, of the bitmap.</param>
+    /// <param name="height">The height, in pixels, of the bitmap.</param>
+    public class Dxt1BitmapContent(int width, int height) : DxtBitmapContent(8, width, height)
     {
-        public Dxt1BitmapContent(int width, int height)
-            : base(8, width, height)
-        {
-        }
-
         /// <summary>
         /// Gets the corresponding GPU texture format for the specified bitmap type.
         /// </summary>
@@ -28,9 +28,6 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Graphics
         /// Returns a string description of the bitmap.
         /// </summary>
         /// <returns>Description of the bitmap.</returns>
-        public override string ToString()
-        {
-            return "DXT1 " + Width + "x" + Height;
-        }
+        public override string ToString() => "DXT1 " + Width + "x" + Height;
     }
 }

@@ -1,4 +1,4 @@
-﻿// MonoGame - Copyright (C) The MonoGame Team
+﻿// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
@@ -9,6 +9,7 @@ using NUnit.Framework;
 
 namespace MonoGame.Tests.ContentPipeline
 {
+    [Category("Audio")]
     class WmaImporterTests
     {
         [Test]
@@ -16,7 +17,7 @@ namespace MonoGame.Tests.ContentPipeline
         {
             var context = new TestImporterContext("TestObj", "TestBin");
             Assert.Throws<ArgumentNullException>(() => new WmaImporter().Import(null, context));
-            Assert.Throws<ArgumentNullException>(() => new WmaImporter().Import("", context));
+            Assert.Throws<ArgumentException>(() => new WmaImporter().Import("", context));
             Assert.Throws<ArgumentNullException>(() => new WmaImporter().Import(@"Assets/Audio/rock_loop_stereo.wma", null));
             Assert.Throws<FileNotFoundException>(() => new WmaImporter().Import(@"this\does\not\exist.wma", context));
         }

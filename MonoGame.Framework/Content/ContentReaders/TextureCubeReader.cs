@@ -1,4 +1,4 @@
-// MonoGame - Copyright (C) The MonoGame Team
+// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Microsoft.Xna.Framework.Content
 {
+    [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.All)]
     internal class TextureCubeReader : ContentTypeReader<TextureCube>
     {
 
@@ -23,10 +24,8 @@ namespace Microsoft.Xna.Framework.Content
             else
                 textureCube = existingInstance;
 
-#if OPENGL
-            Threading.BlockOnUIThread(() =>
+            void readTextureFaces()
             {
-#endif
                 for (int face = 0; face < 6; face++)
                 {
                     for (int i = 0; i < levels; i++)
@@ -38,8 +37,12 @@ namespace Microsoft.Xna.Framework.Content
                         ContentManager.ScratchBufferPool.Return(faceData);
                     }
                 }
+            }
+
 #if OPENGL
-            });
+            Threading.BlockOnUIThread(readTextureFaces);
+#else
+            readTextureFaces();
 #endif
 
              return textureCube;

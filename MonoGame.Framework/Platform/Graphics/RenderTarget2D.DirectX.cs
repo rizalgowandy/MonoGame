@@ -1,4 +1,4 @@
-// MonoGame - Copyright (C) The MonoGame Team
+// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
@@ -104,6 +104,7 @@ namespace Microsoft.Xna.Framework.Graphics
             SharpDX.Utilities.Dispose(ref _depthStencilView);
         }
 
+        /// <summary />
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -146,6 +147,7 @@ namespace Microsoft.Xna.Framework.Graphics
             }
         }
 
+        /// <summary />
         protected internal override Texture2DDescription GetTexture2DDescription()
         {
             var desc = base.GetTexture2DDescription();
@@ -189,6 +191,41 @@ namespace Microsoft.Xna.Framework.Graphics
             desc.OptionFlags &= ~ResourceOptionFlags.GenerateMipMaps;
 
             return desc;
+        }
+
+        private static RenderTarget2D PlatformFromNativeHandle(
+            GraphicsDevice graphicsDevice,
+            nint handle,
+            int width,
+            int height,
+            SurfaceFormat format = SurfaceFormat.Color,
+            DepthFormat preferredDepthFormat = DepthFormat.None,
+            int preferredMultiSampleCount = 0,
+            bool externalPresentation = false)
+        {
+            var renderTarget = new RenderTarget2D(
+                graphicsDevice,
+                width,
+                height,
+                false,
+                format,
+                preferredDepthFormat,
+                preferredMultiSampleCount,
+                RenderTargetUsage.DiscardContents,
+                SurfaceType.SwapChainRenderTarget);
+
+            var d3DTexture = new SharpDX.Direct3D11.Texture2D(handle);
+            ((SharpDX.IUnknown)d3DTexture).AddReference();
+
+            renderTarget.SetNativeTexture(d3DTexture);
+            renderTarget._msSampleDescription = graphicsDevice.GetSupportedSampleDescription(
+                SharpDXHelper.ToFormat(format),
+                renderTarget.MultiSampleCount);
+
+            // Creates RenderTargetView, and if requested, MSAA texture and DepthStencilView
+            renderTarget.GenerateIfRequired();
+
+            return renderTarget;
         }
     }
 }

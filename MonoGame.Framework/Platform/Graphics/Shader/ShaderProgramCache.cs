@@ -10,12 +10,14 @@ namespace Microsoft.Xna.Framework.Graphics
     internal class ShaderProgram
     {
         public readonly int Program;
+        public readonly uint FragmentOutputMask;
 
         private readonly Dictionary<string, int> _uniformLocations = new Dictionary<string, int>();
 
-        public ShaderProgram(int program)
+        public ShaderProgram(int program, uint fragmentOutputMask)
         {
             Program = program;
+            FragmentOutputMask = fragmentOutputMask;
         }
 
         public int GetUniformLocation(string name)
@@ -37,7 +39,7 @@ namespace Microsoft.Xna.Framework.Graphics
     /// </summary>
     internal class ShaderProgramCache : IDisposable
     {
-        private readonly Dictionary<int, ShaderProgram> _programCache = new Dictionary<int, ShaderProgram>();
+        private readonly Dictionary<ulong, ShaderProgram> _programCache = new Dictionary<ulong, ShaderProgram>();
         GraphicsDevice _graphicsDevice;
         bool disposed;
 
@@ -69,14 +71,16 @@ namespace Microsoft.Xna.Framework.Graphics
             // buffers here as well.  This would allow us to optimize
             // setting uniforms to only when a constant buffer changes.
 
-            var key = vertexShader.HashKey | pixelShader.HashKey;
-            if (!_programCache.ContainsKey(key))
+            var key = ((ulong)(uint)vertexShader.HashKey << 32) | (uint)pixelShader.HashKey;
+    
+            if(!_programCache.TryGetValue(key, out var shaderProgram))
             {
                 // the key does not exist so we need to link the programs
-                _programCache.Add(key, Link(vertexShader, pixelShader));
+                shaderProgram = Link(vertexShader, pixelShader);
+                _programCache.Add(key, shaderProgram);
             }
 
-            return _programCache[key];
+            return shaderProgram;
         }
 
         private ShaderProgram Link(Shader vertexShader, Shader pixelShader)
@@ -119,7 +123,7 @@ namespace Microsoft.Xna.Framework.Graphics
                 throw new InvalidOperationException("Unable to link effect program");
             }
 
-            return new ShaderProgram(program);
+            return new ShaderProgram(program, pixelShader.FragmentOutputMask);
         }
 
 

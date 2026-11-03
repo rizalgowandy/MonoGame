@@ -1,4 +1,4 @@
-// MonoGame - Copyright (C) The MonoGame Team
+// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
@@ -34,13 +34,8 @@ namespace Microsoft.Xna.Framework.Media
 
         private static Callback _callback;
 
-        private class Callback : IAsyncCallback
+        private class Callback : CallbackBase, IAsyncCallback
         {
-            public void Dispose()
-            {
-            }
-
-            public IDisposable Shadow { get; set; }
             public void Invoke(AsyncResult asyncResultRef)
             {
                 var ev = _session.EndGetEvent(asyncResultRef);

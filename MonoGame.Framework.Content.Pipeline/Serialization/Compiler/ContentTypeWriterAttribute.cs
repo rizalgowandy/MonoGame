@@ -1,8 +1,6 @@
-﻿// MonoGame - Copyright (C) The MonoGame Team
+﻿// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
-
-using System;
 
 namespace Microsoft.Xna.Framework.Content.Pipeline.Serialization.Compiler
 {
@@ -12,11 +10,5 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Serialization.Compiler
     [AttributeUsage(AttributeTargets.Class)]
     public sealed class ContentTypeWriterAttribute : Attribute
     {
-        /// <summary>
-        /// Initializes a new instance of the ContentTypeWriterAttribute class.
-        /// </summary>
-        public ContentTypeWriterAttribute()
-        {
-        }
     }
 }

@@ -1,4 +1,4 @@
-﻿// MonoGame - Copyright (C) The MonoGame Team
+﻿// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
@@ -9,9 +9,11 @@ using System.Threading;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using NUnit.Framework;
+using MonoGame.Tests;
 
 namespace MonoGame.Tests.Framework
 {
+    [RunOnUiTestFixture]
     class FrameworkDispatcherTest
     {
         [Test]
@@ -54,6 +56,7 @@ namespace MonoGame.Tests.Framework
 
 #if !XNA
         [Test]
+        [Category ("Audio")]
         public void UpdatesSoundEffectInstancePool()
         {
             FrameworkDispatcher.Update();

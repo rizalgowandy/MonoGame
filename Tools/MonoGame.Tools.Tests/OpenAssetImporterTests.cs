@@ -1,4 +1,4 @@
-﻿// MonoGame - Copyright (C) The MonoGame Team
+﻿// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
@@ -25,9 +25,6 @@ namespace MonoGame.Tests.ContentPipeline
         }
 
         [Test]
-#if DESKTOPGL
-        [Ignore("This crashes inside Assimp on Mac!")]
-#endif
         public void BlenderTests()
         {
             var context = new TestImporterContext("TestObj", "TestBin");
@@ -40,8 +37,7 @@ namespace MonoGame.Tests.ContentPipeline
             Assert.AreEqual(0, nodeContent.Children.Count);
             Assert.AreEqual(Matrix.Identity, nodeContent.Transform);
             Assert.AreEqual(Matrix.Identity, nodeContent.AbsoluteTransform);
-            Assert.NotNull(nodeContent.Parent);
-            Assert.AreEqual("<BlenderRoot>", nodeContent.Parent.Name);
+            Assert.IsNull(nodeContent.Parent);
 
             var meshContent = nodeContent as MeshContent;
             Assert.NotNull(meshContent);

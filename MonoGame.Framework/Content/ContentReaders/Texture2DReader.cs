@@ -1,15 +1,16 @@
-// MonoGame - Copyright (C) The MonoGame Team
+// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
 using System;
-using Microsoft.Xna;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+#if NATIVE
+using MonoGame.Framework.Utilities;
+#endif
 
 namespace Microsoft.Xna.Framework.Content
 {
+    [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.All)]
     internal class Texture2DReader : ContentTypeReader<Texture2D>
     {
 		public Texture2DReader()
@@ -65,10 +66,18 @@ namespace Microsoft.Xna.Framework.Content
 			}
 			
             texture = existingInstance ?? new Texture2D(reader.GetGraphicsDevice(), width, height, levelCountOutput > 1, convertedFormat);
+
+
 #if OPENGL
-            Threading.BlockOnUIThread(() =>
-            {
+			bool isOpenGL = true;
+#elif NATIVE
+			bool isOpenGL = PlatformInfo.GraphicsBackend == GraphicsBackend.OpenGL;
+#else
+			bool isOpenGL = false;
 #endif
+
+			void readTextureLevels()
+			{
                 for (int level = 0; level < levelCount; level++)
 			    {
 				    var levelDataSizeInBytes = reader.ReadInt32();
@@ -113,8 +122,8 @@ namespace Microsoft.Xna.Framework.Content
                                 }
 				            break;
                         case SurfaceFormat.Bgra5551:
+							if(isOpenGL)
                             {
-#if OPENGL
                                 // Shift the channels to suit OpenGL
                                 int offset = 0;
                                 for (int y = 0; y < levelHeight; y++)
@@ -128,12 +137,11 @@ namespace Microsoft.Xna.Framework.Content
                                         offset += 2;
                                     }
                                 }
-#endif
                             }
                             break;
 					    case SurfaceFormat.Bgra4444:
+							if (isOpenGL)
 						    {
-#if OPENGL
                                 // Shift the channels to suit OpenGL
 							    int offset = 0;
 							    for (int y = 0; y < levelHeight; y++)
@@ -147,7 +155,6 @@ namespace Microsoft.Xna.Framework.Content
 									    offset += 2;
 								    }
 							    }
-#endif
 						    }
 						    break;
 					    case SurfaceFormat.NormalizedByte4:
@@ -172,10 +179,14 @@ namespace Microsoft.Xna.Framework.Content
                     texture.SetData(level, null, levelData, 0, levelDataSizeInBytes);
                     ContentManager.ScratchBufferPool.Return(levelData);
 			    }
+			}
+
 #if OPENGL
-            });
+			Threading.BlockOnUIThread(readTextureLevels);
+#else
+			readTextureLevels();
 #endif
-        			
+
 			return texture;
 		}
     }
